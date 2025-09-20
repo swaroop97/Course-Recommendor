@@ -8,9 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-# -----------------------------
 # Data loading and cleaning
-# -----------------------------
 @st.cache_data(show_spinner=False)
 def load_data(csv_path: str) -> Tuple[pd.DataFrame, str, str]:
     df = pd.read_csv(csv_path)
@@ -46,9 +44,7 @@ def load_data(csv_path: str) -> Tuple[pd.DataFrame, str, str]:
     return df, title_col, desc_col
 
 
-# -----------------------------
 # Text preprocessing and model
-# -----------------------------
 def clean_text(s: str) -> str:
     s = s.lower()
     s = re.sub(r"http\S+", " ", s)
@@ -79,9 +75,8 @@ def rank(query: str, vectorizer, X, df: pd.DataFrame, k: int):
     return out.sort_values("similarity", ascending=False).head(k)
 
 
-# -----------------------------
+
 # Streamlit UI
-# -----------------------------
 def ui():
     st.set_page_config(page_title="Course Recommender", page_icon="🎓", layout="wide")
     st.title("Interactive Course Recommender 🎓")
