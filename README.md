@@ -73,7 +73,3 @@ python courses.py --csv_path coursera_courses.csv --use_saved --query "SQL for d
 
 - The Streamlit app caches the loaded data and model for fast iteration.
 - Similarity is computed over **title + description** after basic text cleaning (lowercasing, URL removal, alpha-only tokens).
-
-## License
-
-MIT — see `LICENSE`.
