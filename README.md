@@ -2,7 +2,7 @@
 
 A lightweight **NLP-based course recommender** that matches a free-text query against course titles + descriptions using **TF‑IDF** and **cosine similarity**.
 
-- **Interactive app**: Streamlit UI (`streamcourse_app.py`)
+- **Interactive app**: Streamlit UI (`streamcourse_app.py`; `streamlit_app.py` is a thin entry point for Streamlit Community Cloud’s default main-file name)
 - **CLI script**: train/save artifacts + query from terminal (`courses.py`)
 
 ## Features
@@ -43,7 +43,13 @@ pip install -r requirements.txt
 streamlit run streamcourse_app.py
 ```
 
-In the sidebar, keep the default `coursera_courses.csv` (or upload your own CSV).
+(`streamlit run streamlit_app.py` works the same.)
+
+In the sidebar, the default CSV path points at the bundled `coursera_courses.csv` next to the scripts (or upload your own CSV).
+
+### Streamlit Community Cloud
+
+In the app settings, set **Main file** to either `streamlit_app.py` (recommended) or `streamcourse_app.py`. The app resolves the dataset path relative to the script directory so the CSV loads even when the process working directory is not the repo root.
 
 ### 3) Run via CLI (optional)
 
@@ -62,6 +68,7 @@ python courses.py --csv_path coursera_courses.csv --use_saved --query "SQL for d
 
 ```text
 .
+├─ streamlit_app.py        # Streamlit Cloud entry (imports streamcourse_app)
 ├─ streamcourse_app.py     # Streamlit UI
 ├─ courses.py              # CLI trainer / ranker with artifact support
 ├─ coursera_courses.csv    # Dataset (default)

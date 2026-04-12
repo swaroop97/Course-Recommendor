@@ -1,5 +1,5 @@
-import os
 import re
+from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
@@ -7,11 +7,28 @@ import streamlit as st
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+ROOT = Path(__file__).resolve().parent
+DEFAULT_CSV = ROOT / "coursera_courses.csv"
+
+
+def _resolve_csv_arg(csv_path: str | Path) -> str | Path:
+    """Resolve relative paths against this file's directory (fixes Cloud cwd issues)."""
+    if isinstance(csv_path, Path):
+        p = csv_path
+    else:
+        p = Path(csv_path)
+    if not p.is_absolute():
+        p = ROOT / p
+    return p
+
 
 # Data loading and cleaning
 @st.cache_data(show_spinner=False)
-def load_data(csv_path: str) -> Tuple[pd.DataFrame, str, str]:
-    df = pd.read_csv(csv_path)
+def load_data(csv_path) -> Tuple[pd.DataFrame, str, str]:
+    if isinstance(csv_path, (str, Path)):
+        df = pd.read_csv(_resolve_csv_arg(Path(csv_path)))
+    else:
+        df = pd.read_csv(csv_path)
 
     # Normalize column names and find required fields
     cols = {c.lower(): c for c in df.columns}
@@ -83,7 +100,7 @@ def ui():
     st.caption("Similarity over course titles and descriptions.")
 
     # Sidebar controls
-    csv_path = st.sidebar.text_input("CSV path", value="coursera_courses.csv")
+    csv_path = st.sidebar.text_input("CSV path", value=str(DEFAULT_CSV))
     top_k = st.sidebar.slider("Top K", min_value=5, max_value=30, value=10, step=1)
     min_rating = st.sidebar.text_input("Min rating (optional)", value="")
     difficulty = st.sidebar.selectbox("Difficulty filter", options=["", "Beginner", "Intermediate", "Advanced"])
@@ -154,7 +171,7 @@ def ui():
             s = str(v).strip().lower()
             return s in placeholders
 
-        mask_good = ~ranked[show_cols].applymap(is_bad).any(axis=1)
+        mask_good = ~ranked[show_cols].map(is_bad).any(axis=1)
         ranked = ranked[mask_good].copy()
 
         # Shorten description and format similarity
