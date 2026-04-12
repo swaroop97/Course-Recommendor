@@ -30,21 +30,21 @@ def load_data(csv_path) -> Tuple[pd.DataFrame, str, str]:
     else:
         df = pd.read_csv(csv_path)
 
-    # Normalize column names and find required fields
-    cols = {c.lower(): c for c in df.columns}
+    # Normalize column names (headers may be numeric in messy CSVs — avoid c.lower() on floats)
+    cols = {str(c).strip().lower(): c for c in df.columns}
     title_col = cols.get("title")
     desc_col = cols.get("course_de") or cols.get("course_description")
     if not title_col or not desc_col:
         raise ValueError("CSV must have 'Title' and either 'course_de' or 'course_description'.")
 
-    # Coerce to strings and strip whitespace
-    df[title_col] = df[title_col].astype(str).str.strip()
-    df[desc_col] = df[desc_col].astype(str).str.strip()
-
-    # Treat literal placeholders as empty
     bad = {"none", "nan", "null"}
-    df[title_col] = df[title_col].apply(lambda s: "" if s.lower() in bad else s)
-    df[desc_col] = df[desc_col].apply(lambda s: "" if s.lower() in bad else s)
+
+    def _clean_cell(val: object) -> str:
+        t = str(val).strip()
+        return "" if t.lower() in bad else t
+
+    df[title_col] = df[title_col].map(_clean_cell)
+    df[desc_col] = df[desc_col].map(_clean_cell)
 
     # Strictly drop rows where either title OR description is empty
     df = df[(df[title_col] != "") & (df[desc_col] != "")].copy()
@@ -62,8 +62,8 @@ def load_data(csv_path) -> Tuple[pd.DataFrame, str, str]:
 
 
 # Text preprocessing and model
-def clean_text(s: str) -> str:
-    s = s.lower()
+def clean_text(s: object) -> str:
+    s = str(s).lower()
     s = re.sub(r"http\S+", " ", s)
     s = re.sub(r"[^a-z\s]", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
